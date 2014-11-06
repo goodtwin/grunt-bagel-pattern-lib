@@ -7,8 +7,10 @@
  */
 
 // Include dependancies
+var util = require('util');
 var handlebars = require('handlebars');
 var dss = require('dss');
+var _ = require('underscore');
 
 // Expose
 module.exports = function(grunt){
@@ -24,13 +26,48 @@ module.exports = function(grunt){
       template: __dirname + '/../template/',
       template_index: 'index.handlebars',
       output_index: 'index.html',
-      include_empty_files: true
+      include_empty_files: true,
+      css_include: '../dist/style/style.css'
     });
 
     // Output options if --verbose cl option is passed
     grunt.verbose.writeflags(options, 'Options');
 
     // Describe custom parsers
+    var gt_parsers = {
+      // Finds @param in comment blocks
+      param: function(i, line, block, file){
+        var param = line.split(' - ');
+        return {
+          name: param[0],
+          description: param[1],
+          default: param[2]
+        };
+      },
+      // Finds @type in comment blocks
+      type: function(i, line, block, file){
+        return line;
+      },
+      // Finds @example in comment blocks
+      example: function(i, line, block, file){
+        return {
+          example: line
+        };
+      },
+      // Finds @section in comment blocks
+      section: function(i, line, block, file){
+        var section = line.split('.');
+        return {
+          category: section[0],
+          component: section[1],
+          chrome: section[2]
+        };
+      }
+    };
+    for(key in gt_parsers){
+      dss.parser(key, options.parsers[key]);
+    }
+    // Custom parsers from Gruntfile
     for(key in options.parsers){
       dss.parser(key, options.parsers[key]);
     }
@@ -74,6 +111,16 @@ module.exports = function(grunt){
             // Add comment block to styleguide
             styleguide.push(parsed);
           }
+          var grouped = _.groupBy(styleguide[0].blocks, function(block){
+            return block.section.category;
+          });
+          // _.each(grouped, function(value, key, list){
+          //   var component = _.groupBy(value, function(block){
+          //     return block.section.component;
+          //   });
+          //   console.log(util.inspect(component, false, null));
+          // });
+          //console.log(util.inspect(styleguide, false, null));
 
           // Check if we're done
           if (length > 1) {
@@ -81,8 +128,8 @@ module.exports = function(grunt){
           }
           else {
             // Set output template and file
-            var template_filepath = template_dir + options.template_index,
-                output_filepath = output_dir + options.output_index;
+            var template_filepath = template_dir + options.template_index;
+                //output_filepath = output_dir + options.output_index;
 
             if (!grunt.file.exists(template_filepath)) {
               grunt.fail.fatal('Cannot read the template file');
@@ -104,29 +151,47 @@ module.exports = function(grunt){
               });
             });
 
-            // Create HTML ouput
-            var html = handlebars.compile(grunt.file.read(template_filepath))({
-              project: grunt.file.readJSON('package.json'),
-              files: styleguide
+            // Register helper for compiling markup with modifier class
+            handlebars.registerHelper('compilePartial', function (data, escaped) {
+              data = data || {};
+              data.modifier = escaped;
+              //console.log(util.inspect(data, false, null));
+              var template;
+              if(data.markup){
+                template = handlebars.compile(data.markup.example);
+              }
+
+              return new handlebars.SafeString(template(data));
             });
 
-            var output_type = 'created', output = null;
-            if (grunt.file.exists(output_filepath)) {
-              output_type = 'overwrited';
-              output = grunt.file.read(output_filepath);
-            }
-            // avoid write if there is no change
-            if (output !== html) {
-              // Render file
-              grunt.file.write(output_filepath, html);
+            // Create HTML ouput
+            _.each(grouped, function(value, key, list){
+              styleguide[0].blocks = value;
+              var html = handlebars.compile(grunt.file.read(template_filepath))({
+                project: grunt.file.readJSON('package.json'),
+                css_include: options.css_include,
+                files: styleguide
+              });
 
-              // Report build
-              grunt.log.writeln('✓ Styleguide ' + output_type + ' at: ' + grunt.log.wordlist([output_dir], {color: 'cyan'}));
-            }
-            else {
-              // no change
-              grunt.log.writeln('‣ Styleguide unchanged');
-            }
+              var output_filepath = output_dir + key + '.html';
+              var output_type = 'created', output = null;
+              if (grunt.file.exists(output_filepath)) {
+                output_type = 'overwrited';
+                output = grunt.file.read(output_filepath);
+              }
+              // avoid write if there is no change
+              if (output !== html) {
+                // Render file
+                grunt.file.write(output_filepath, html);
+
+                // Report build
+                grunt.log.writeln('✓ Styleguide ' + output_type + ' at: ' + grunt.log.wordlist([output_dir], {color: 'cyan'}));
+              }
+              else {
+                // no change
+                grunt.log.writeln('‣ Styleguide unchanged');
+              }
+            });
 
             // Return promise
             promise();
