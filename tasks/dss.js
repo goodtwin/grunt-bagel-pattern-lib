@@ -111,16 +111,14 @@ module.exports = function(grunt){
             // Add comment block to styleguide
             styleguide.push(parsed);
           }
+          // Dedupe
+          styleguide[0].blocks = _.uniq(styleguide[0].blocks, function(item){
+            return JSON.stringify(item);
+          });
+          // Group by top-level category
           var grouped = _.groupBy(styleguide[0].blocks, function(block){
             return block.section.category;
           });
-          // _.each(grouped, function(value, key, list){
-          //   var component = _.groupBy(value, function(block){
-          //     return block.section.component;
-          //   });
-          //   console.log(util.inspect(component, false, null));
-          // });
-          //console.log(util.inspect(styleguide, false, null));
 
           // Check if we're done
           if (length > 1) {
