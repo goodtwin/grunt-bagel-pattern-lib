@@ -65,7 +65,7 @@ module.exports = function(grunt){
       }
     };
     for(key in gt_parsers){
-      dss.parser(key, options.parsers[key]);
+      dss.parser(key, gt_parsers[key]);
     }
     // Custom parsers from Gruntfile
     for(key in options.parsers){
