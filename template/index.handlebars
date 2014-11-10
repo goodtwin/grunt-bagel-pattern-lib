@@ -20,25 +20,19 @@
 
 		<nav role="main">
 			<h2>Table of Contents</h2>
-			<ul>
-				{{#files}}
-				{{#blocks}}
-					<li><a href="#{{name}}" data-file="{{name}}">{{name}}</a></li>
-				{{/blocks}}
-				{{/files}}
-			</ul>
+			{{{ tree toc }}}
 		</nav>
 
 		<div class="styleguide">
 
+			<h3 id="{{title}}">{{title}}</h3>
+
 			{{#files}}
 			<div class="file">
 
-				<h3 id="{{file}}">{{file}}</h3>
-
 				{{#blocks}}
 
-					<div class="block" id="{{name}}">
+					<div class="block" id="{{section.id}}">
 
 						<div class="info">
 							{{#if type}}

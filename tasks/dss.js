@@ -56,11 +56,10 @@ module.exports = function(grunt){
       },
       // Finds @section in comment blocks
       section: function(i, line, block, file){
-        var section = line.split('.');
+        var section = line.replace(/\./g,'/');
         return {
-          category: section[0],
-          component: section[1],
-          chrome: section[2]
+          path: section.substr(0, section.lastIndexOf('/')),
+          id: section.substr(section.lastIndexOf('/') + 1, section.length)
         };
       }
     };
@@ -115,9 +114,17 @@ module.exports = function(grunt){
           styleguide[0].blocks = _.uniq(styleguide[0].blocks, function(item){
             return JSON.stringify(item);
           });
-          // Group by top-level category
-          var grouped = _.groupBy(styleguide[0].blocks, function(block){
-            return block.section.category;
+          // Sort Alphabetically
+          var sorted = _.sortBy(styleguide[0].blocks, function(block){
+           return block.section.id;
+          });
+          // Put index first
+          sorted = _.sortBy(sorted, function(block){
+           return block.section.id !== 'index';
+          });
+          // Group by @section hierarchy
+          var grouped = _.groupBy(sorted, function(block){
+            return block.section.path;
           });
 
           // Check if we're done
@@ -153,7 +160,6 @@ module.exports = function(grunt){
             handlebars.registerHelper('compilePartial', function (data, escaped) {
               data = data || {};
               data.modifier = escaped;
-              //console.log(util.inspect(data, false, null));
               var template;
               if(data.markup){
                 template = handlebars.compile(data.markup.example);
@@ -162,19 +168,71 @@ module.exports = function(grunt){
               return new handlebars.SafeString(template(data));
             });
 
+            // Register TOC helper
+            handlebars.registerHelper('tree', function (data) {
+              data = data || {};
+              function json_tree(data) {
+                var json = '<ul>';
+
+                _.each(data, function(value, key, list){
+                  if(_.isObject(value) || key !== 'index') {
+                    json = json + '<li>';
+                    if(_.isObject(value)) {
+                        json = json + key;
+                        json = json + json_tree(value);
+                    }
+                    else{
+                      json = json + '<a href="/dist/docs/'+value+'#'+key+'">' + key;
+                      json = json + '</a>';
+                    }
+                    json = json + '</li>';
+                  }
+                });
+                return json + '</ul>';
+              }
+              return json_tree(data);
+            });
+
+            var createNestedObject = function( base, names ) {
+              for( var i = 0; i < names.length; i++ ) {
+                base = base[ names[i] ] = base[ names[i] ] || {};
+              }
+            };
+
+            var setNestedObject = function( obj, str, val ) {
+              str = str.split(".");
+              while (str.length > 1) {
+                obj = obj[str.shift()];
+              }
+              return obj[str.shift()] = val;
+            };
+            // Create Table of Contents
+            var toc = {};
+            _.each(grouped, function(value, key, list){
+              var array = key.split('/');
+              createNestedObject( toc, array, value );
+              _.each(value, function(value, key, list){
+                var str = value.section.path.replace(/\//g,'.') + '.' + value.section.id,
+                  id = value.section.path;
+                setNestedObject(toc, str, id);
+              });
+            });
+
             // Create HTML ouput
             _.each(grouped, function(value, key, list){
               styleguide[0].blocks = value;
               var html = handlebars.compile(grunt.file.read(template_filepath))({
                 project: grunt.file.readJSON('package.json'),
                 css_include: options.css_include,
-                files: styleguide
+                title: key,
+                files: styleguide,
+                toc: toc
               });
 
-              var output_filepath = output_dir + key + '.html';
+              var output_filepath = output_dir + key + '/index.html';
               var output_type = 'created', output = null;
               if (grunt.file.exists(output_filepath)) {
-                output_type = 'overwrited';
+                output_type = 'overwritten';
                 output = grunt.file.read(output_filepath);
               }
               // avoid write if there is no change
