@@ -11,7 +11,7 @@
 module.exports = function(grunt) {
 
   grunt.initConfig({
-    dss: {
+    bagel_pattern_lib: {
       docs: {
         options: {
           template: 'template/'
@@ -22,7 +22,7 @@ module.exports = function(grunt) {
       }
     },
 
-    // 
+    //
     jshint: {
       all: [
         'Gruntfile.js',
@@ -55,9 +55,9 @@ module.exports = function(grunt) {
 
   // Whenever the test task is run, cleanup the docs folder and
   // then test the result.
-  grunt.registerTask('test', ['clean', 'dss', 'nodeunit']);
+  grunt.registerTask('test', ['clean', 'bagel_pattern_lib', 'nodeunit']);
 
-  // By default run the DSS task to create docs
-  grunt.registerTask('default', ['clean', 'dss']);
+  // By default run the Pattern Lib task to create docs
+  grunt.registerTask('default', ['clean', 'bagel_pattern_lib']);
 
 };

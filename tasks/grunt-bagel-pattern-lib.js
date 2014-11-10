@@ -1,4 +1,14 @@
 /*
+ * grunt-bagel-pattern-lib
+ * https://github.com/goodtwin/grunt-bagel-pattern-lib
+ *
+ * Copyright (c) 2014 GoodTwin Design Inc.
+ * Licensed under the MIT license.
+ */
+
+
+/*
+ * Some source taken from
  * DSS
  * https://github.com/darcyclarke/DSS
  *
@@ -16,7 +26,7 @@ var _ = require('underscore');
 module.exports = function(grunt){
 
   // Register DSS
-  grunt.registerMultiTask('dss', 'Parse DSS comment blocks', function(){
+  grunt.registerMultiTask('bagel_pattern_lib', 'Parse DSS comment blocks', function(){
 
     // Setup async promise
     var promise = this.async();
@@ -57,6 +67,7 @@ module.exports = function(grunt){
       // Finds @section in comment blocks
       section: function(i, line, block, file){
         var section = line.replace(/\./g,'/');
+
         return {
           path: section.substr(0, section.lastIndexOf('/')),
           id: section.substr(section.lastIndexOf('/') + 1, section.length)
@@ -112,6 +123,7 @@ module.exports = function(grunt){
           }
           // Dedupe
           styleguide[0].blocks = _.uniq(styleguide[0].blocks, function(item){
+            grunt.log.writeln(JSON.stringify(item));
             return JSON.stringify(item);
           });
           // Sort Alphabetically
@@ -218,7 +230,6 @@ module.exports = function(grunt){
               });
             });
 
-            // Create HTML ouput
             _.each(grouped, function(value, key, list){
               styleguide[0].blocks = value;
               var html = handlebars.compile(grunt.file.read(template_filepath))({
