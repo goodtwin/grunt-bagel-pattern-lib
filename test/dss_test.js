@@ -4,7 +4,7 @@ var grunt = require('grunt');
 var fs = require('fs');
 
 exports.DSS = {
-  'copy doc assets': function(test) {
+  docs: function(test) {
     test.expect(7);
 
     var expects = {
@@ -15,7 +15,7 @@ exports.DSS = {
         // we assume that if the styles.css have been correctly copied, prettify files will be also here
         // we don't want to check all files because it's useless ?
         js_prettify: grunt.file.isDir('docs/assets/js/prettify'),
-        styleguide: grunt.file.exists('docs/index.html'),
+        styleguide: grunt.file.exists('docs/foo/index.html'),
         template: grunt.file.exists('docs/index.mustache'),
     };
 
@@ -31,4 +31,3 @@ exports.DSS = {
   },
 
 };
-

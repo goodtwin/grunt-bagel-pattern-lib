@@ -17,7 +17,7 @@ module.exports = function(grunt) {
           template: 'template/'
         },
         files: {
-          'docs/': 'example/**/*.{css,scss,sass,less,styl}'
+          'docs/': 'fixtures/**/*.css'
         }
       }
     },
