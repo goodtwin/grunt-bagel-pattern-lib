@@ -1,6 +1,6 @@
 {
-  "name": "grunt-dss",
-  "description": "Build UI Documentation with the DSS Parser",
+  "name": "grunt-bagel-pattern-lib",
+  "description": "Build Bagel Pattern Libraries with the DSS Parser",
   "version": "0.1.0",
   "homepage": "https://github.com/goodtwin/grunt-bagel-pattern-lib",
   "author": {

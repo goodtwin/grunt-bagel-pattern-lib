@@ -83,6 +83,8 @@ module.exports = function(grunt){
     }
 
     // Build Documentation
+    var styleguide = {'blocks':[]};
+    
     this.files.forEach(function(f){
 
       // Filter files based on their existence
@@ -101,8 +103,7 @@ module.exports = function(grunt){
       var files = src,
           template_dir = options.template,
           output_dir = f.dest,
-          length = files.length,
-          styleguide = [];
+          length = files.length;
 
       // Parse files
       files.map(function(filename){
@@ -115,19 +116,18 @@ module.exports = function(grunt){
 
           // Continue only if file contains DSS annotation
           if (options.include_empty_files || parsed.blocks.length) {
-            // Add filename
-            parsed['file'] = filename;
 
             // Add comment block to styleguide
-            styleguide.push(parsed);
+            styleguide.blocks = _.union(styleguide.blocks, parsed.blocks);
           }
+
           // Dedupe
-          styleguide[0].blocks = _.uniq(styleguide[0].blocks, function(item){
+          styleguide.blocks = _.uniq(styleguide.blocks, function(item){
             grunt.log.writeln(JSON.stringify(item));
             return JSON.stringify(item);
           });
           // Sort Alphabetically
-          var sorted = _.sortBy(styleguide[0].blocks, function(block){
+          var sorted = _.sortBy(styleguide.blocks, function(block){
            return block.section.id;
           });
           // Put index first
@@ -231,7 +231,7 @@ module.exports = function(grunt){
             });
 
             _.each(grouped, function(value, key, list){
-              styleguide[0].blocks = value;
+              styleguide.blocks = value;
               var html = handlebars.compile(grunt.file.read(template_filepath))({
                 project: grunt.file.readJSON('package.json'),
                 css_include: options.css_include,
