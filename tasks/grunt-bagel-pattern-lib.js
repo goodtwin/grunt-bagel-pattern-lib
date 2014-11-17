@@ -37,7 +37,8 @@ module.exports = function(grunt){
       template_index: 'index.handlebars',
       output_index: 'index.html',
       include_empty_files: true,
-      css_include: '../dist/style/style.css'
+      css_include: 'dist/style/style.css',
+      doc_root: 'dist/docs'
     });
 
     // Output options if --verbose cl option is passed
@@ -84,7 +85,7 @@ module.exports = function(grunt){
 
     // Build Documentation
     var styleguide = {'blocks':[]};
-    
+
     this.files.forEach(function(f){
 
       // Filter files based on their existence
@@ -235,6 +236,7 @@ module.exports = function(grunt){
               var html = handlebars.compile(grunt.file.read(template_filepath))({
                 project: grunt.file.readJSON('package.json'),
                 css_include: options.css_include,
+                doc_root: options.doc_root,
                 title: key,
                 files: styleguide,
                 toc: toc

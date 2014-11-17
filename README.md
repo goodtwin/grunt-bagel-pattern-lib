@@ -49,6 +49,28 @@ Default value: `index.html`
 
 The filename of the index for the output file.
 
+#### options.css_include
+
+Type: `String`
+Default value: `dist/style/style.css`
+
+The file path and name of the css include for the core style.
+
+#### options.doc_root
+
+Type: `String`
+Default value: `dist/docs`
+
+Root path of the build locations.
+
+#### options.output_index
+
+Type: `String`
+Default value: `index.html`
+
+The filename of the index for the output file.
+
+
 #### options.parsers
 
 Type: `Object`
