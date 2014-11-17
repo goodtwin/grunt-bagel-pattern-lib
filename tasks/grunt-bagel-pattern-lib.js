@@ -195,7 +195,7 @@ module.exports = function(grunt){
                         json = json + json_tree(value);
                     }
                     else{
-                      json = json + '<a href="/dist/docs/'+value+'#'+key+'">' + key;
+                      json = json + '<a href="'+options.doc_root+'/'+value+'#'+key+'">' + key;
                       json = json + '</a>';
                     }
                     json = json + '</li>';
